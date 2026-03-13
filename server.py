@@ -32,11 +32,16 @@ GPSD_HOST = os.environ.get("GPSD_HOST", "127.0.0.1")
 GPSD_PORT = int(os.environ.get("GPSD_PORT", "2947"))
 TLE_URL = "https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle"
 GROUP_TABLE_URL = "https://celestrak.org/NORAD/elements/table.php?GROUP=gps-ops"
+QZSS_GPS_SATELLITES_URL = "https://qzss.go.jp/en/technical/satellites/"
 TLE_CACHE_PATH = CACHE_DIR / "gps-ops.tle"
 SATELLITE_METADATA_CACHE_PATH = CACHE_DIR / "gps-ops-metadata.json"
 PRN_RE = re.compile(r"PRN\s+0*(\d+)")
 TABLE_ROW_RE = re.compile(
     r"<td class=small>(?P<intl>\d{4}-\d{3}[A-Z]?) .*?</td>\s*<td class=small>(?P<norad>\d+)</td>\s*<td class=small>(?P<name>[^<]+)",
+    re.S,
+)
+QZSS_GPS_ROW_RE = re.compile(
+    r"<td[^>]*>\s*(?P<prn>\d+)\s*</td>\s*<td[^>]*>\s*\d+\s*</td>\s*<td[^>]*>[^<]+</td>\s*<td[^>]*>\s*(?P<launch>\d{4}/\d{1,2}/\d{1,2})\s*</td>",
     re.S,
 )
 GPS_LOCAL_TZ_OFFSET_MINUTES = -180
@@ -145,12 +150,14 @@ class GpsOpsCatalog:
         self._timescale = load.timescale()
         self._satellites_by_prn: dict[int, dict[str, Any]] = {}
         self._launch_metadata: dict[str, dict[str, Any]] = {}
+        self._qzss_launch_dates_by_prn: dict[int, str] = {}
         self._last_fetch_at: float | None = None
         self._last_error: str | None = None
         self._thread = threading.Thread(target=self._run, daemon=True, name="gps-ops-catalog")
 
     def start(self) -> None:
         self._load_metadata_cache()
+        self._refresh_qzss_launch_dates()
         self._load_cache()
         self._thread.start()
 
@@ -223,6 +230,7 @@ class GpsOpsCatalog:
             raise RuntimeError("empty TLE response")
 
         group_metadata = self._fetch_group_metadata()
+        self._refresh_qzss_launch_dates()
         TLE_CACHE_PATH.write_text(raw_tle + "\n", encoding="utf-8")
         parsed = self._parse_tle_block(raw_tle, group_metadata)
         self._save_metadata_cache()
@@ -270,12 +278,15 @@ class GpsOpsCatalog:
             intl_designator = metadata.get("intl_designator")
             block = self._block_from_name(name)
             launch = self._resolve_launch_metadata(intl_designator)
+            qzss_launch_date = self._qzss_launch_dates_by_prn.get(prn)
+            if qzss_launch_date:
+                launch = self._merge_launch_metadata(launch, qzss_launch_date)
             catalog[prn] = {
                 "name": name.strip(),
                 "norad_id": norad_id,
                 "intl_designator": intl_designator,
                 "block": block,
-                "image_url": f"/assets/{block}.svg",
+                "image_url": self._image_url_for_block(block),
                 "launch": launch,
                 "satellite": EarthSatellite(line1, line2, name, self._timescale),
             }
@@ -301,14 +312,6 @@ class GpsOpsCatalog:
         cached = self._launch_metadata.get(launch_id)
         if cached:
             return copy.deepcopy(cached)
-        try:
-            launch_data = self._fetch_launch_metadata(launch_id)
-        except Exception as exc:
-            logging.warning("Launch metadata lookup failed for %s: %s", launch_id, exc)
-            launch_data = None
-        if launch_data:
-            self._launch_metadata[launch_id] = launch_data
-            return copy.deepcopy(launch_data)
         return None
 
     def _fetch_launch_metadata(self, launch_id: str) -> dict[str, Any] | None:
@@ -354,10 +357,41 @@ class GpsOpsCatalog:
         launches = payload.get("launches")
         if isinstance(launches, dict):
             self._launch_metadata = launches
+        qzss_dates = payload.get("qzss_launch_dates_by_prn")
+        if isinstance(qzss_dates, dict):
+            self._qzss_launch_dates_by_prn = {
+                int(prn): date for prn, date in qzss_dates.items() if isinstance(date, str)
+            }
 
     def _save_metadata_cache(self) -> None:
-        payload = {"launches": self._launch_metadata}
+        payload = {
+            "launches": self._launch_metadata,
+            "qzss_launch_dates_by_prn": self._qzss_launch_dates_by_prn,
+        }
         SATELLITE_METADATA_CACHE_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    def _refresh_qzss_launch_dates(self) -> None:
+        if self._qzss_launch_dates_by_prn:
+            return
+        try:
+            html_doc = fetch_text(QZSS_GPS_SATELLITES_URL)
+        except Exception as exc:
+            logging.warning("Unable to fetch QZSS GPS launch dates: %s", exc)
+            return
+        parsed: dict[int, str] = {}
+        for match in QZSS_GPS_ROW_RE.finditer(html_doc):
+            prn = int(match.group("prn"))
+            launch_date = datetime.strptime(match.group("launch"), "%Y/%m/%d").strftime("%d/%m/%Y")
+            parsed[prn] = launch_date
+        if parsed:
+            self._qzss_launch_dates_by_prn = parsed
+            self._save_metadata_cache()
+
+    @staticmethod
+    def _merge_launch_metadata(launch: dict[str, Any] | None, qzss_launch_date: str) -> dict[str, Any]:
+        base = copy.deepcopy(launch) if launch else {}
+        base.setdefault("date_localized", qzss_launch_date)
+        return base
 
     @staticmethod
     def _block_from_name(name: str) -> str:
@@ -371,6 +405,12 @@ class GpsOpsCatalog:
         if "BIIR" in upper_name:
             return "gps-block-iir"
         return "gps-block-generic"
+
+    @staticmethod
+    def _image_url_for_block(block: str) -> str:
+        if block == "gps-block-generic":
+            return "/assets/gps-block-generic.svg"
+        return f"/assets/{block}.jpg"
 
     @staticmethod
     def _orbital_period_minutes(sat: EarthSatellite) -> float | None:
