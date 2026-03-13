@@ -1,49 +1,118 @@
 # GPS-Globe
 
-## Português
-
-Visualizador web em tempo real para dados GPS/GNSS, com globo 3D, posição atual do receptor e satélites GPS usados no cálculo da posição.
-
 ## English
 
-Real-time GPS/GNSS web visualizer with a 3D globe, live receiver position, and GPS satellites used in the positioning solution.
+Real-time GPS/GNSS web visualizer with a 3D globe, live receiver position, and clickable GPS satellite metadata.
 
-## O que este projeto faz
+### Features
 
-- Exibe a posição atual do receptor GPS em um globo 3D.
-- Mostra os satélites GPS visíveis e os que estão participando do cálculo.
-- Permite clicar nos satélites do globo para abrir um tooltip com:
-  - foto do bloco/satélite
+- shows the current receiver position on a live 3D globe
+- displays GPS satellites used in the positioning solution
+- supports clickable satellite tooltips with:
+  - launch date
+  - current orbital location
+  - orbital period
+  - speed in km/h
+  - local satellite/block image
+- updates the interface continuously from `gpsd`
+- uses operational GPS TLEs to render orbital context
+
+### Stack
+
+- Python 3
+- HTML, CSS, JavaScript
+- `globe.gl`
+- `gpsd`
+- `skyfield`
+
+### Project Structure
+
+- [`server.py`](./server.py): HTTP server, GPS integration, TLE handling, and metadata enrichment
+- [`static/index.html`](./static/index.html): page structure
+- [`static/app.js`](./static/app.js): globe rendering, polling, and satellite tooltip behavior
+- [`static/styles.css`](./static/styles.css): layout and responsive styling
+- [`static/assets`](./static/assets): favicon and local satellite images
+
+### Local Run
+
+Requirements:
+
+- Python 3
+- `gpsd` running and reachable
+- network access for public orbital metadata refresh
+
+Run:
+
+```bash
+python3 server.py --host 0.0.0.0 --port 18196
+```
+
+Then open:
+
+```text
+http://127.0.0.1:18196
+```
+
+### API
+
+- `GET /api/state`
+- `GET /healthz`
+
+### Data Sources
+
+- GPS operational TLEs: CelesTrak
+- GPS launch dates: QZSS
+- GPS block photos: GPS.gov
+
+### License
+
+MIT. See [`LICENSE`](./LICENSE).
+
+### Notes
+
+- this repository excludes tunnel configuration and runtime cache
+- it was prepared for public release without personal infrastructure secrets
+
+## Português
+
+Visualizador web em tempo real para dados GPS/GNSS, com globo 3D, posição atual do receptor e metadata clicável dos satélites GPS.
+
+### Funcionalidades
+
+- mostra a posição atual do receptor em um globo 3D ao vivo
+- exibe os satélites GPS usados no cálculo da posição
+- permite clicar nos satélites para abrir tooltip com:
   - data de lançamento
   - localização orbital atual
   - período orbital
-  - velocidade orbital
-- Atualiza a interface em tempo real a partir do `gpsd`.
-- Usa TLEs operacionais do GPS para calcular subponto orbital e visualização.
+  - velocidade em km/h
+  - imagem local do bloco/satélite
+- atualiza a interface continuamente a partir do `gpsd`
+- usa TLEs operacionais do GPS para renderizar o contexto orbital
 
-## Stack
-
-- Backend: Python 3
-- Frontend: HTML, CSS, JavaScript
-- Globo 3D: `globe.gl`
-- Dados de posição: `gpsd`
-- Propagação orbital: `skyfield`
-
-## Estrutura
-
-- [`server.py`](./server.py): servidor HTTP, integração com `gpsd`, TLEs e metadata orbital.
-- [`static/index.html`](./static/index.html): estrutura da interface.
-- [`static/app.js`](./static/app.js): renderização do globo, polling da API e tooltip dos satélites.
-- [`static/styles.css`](./static/styles.css): layout responsivo e identidade visual.
-- [`static/assets`](./static/assets): favicon e imagens locais usadas pela UI.
-
-## Como rodar localmente
-
-Pré-requisitos:
+### Stack
 
 - Python 3
-- `gpsd` ativo e respondendo
-- acesso de rede para baixar TLEs e metadata pública
+- HTML, CSS, JavaScript
+- `globe.gl`
+- `gpsd`
+- `skyfield`
+
+### Estrutura do Projeto
+
+- [`server.py`](./server.py): servidor HTTP, integração com GPS, TLEs e enriquecimento de metadata
+- [`static/index.html`](./static/index.html): estrutura da página
+- [`static/app.js`](./static/app.js): renderização do globo, polling e comportamento do tooltip
+- [`static/styles.css`](./static/styles.css): layout e responsividade
+- [`static/assets`](./static/assets): favicon e imagens locais dos satélites
+
+### Execução Local
+
+Requisitos:
+
+- Python 3
+- `gpsd` ativo e acessível
+- acesso de rede para atualização pública de metadata orbital
 
 Execução:
 
@@ -57,24 +126,22 @@ Depois abra:
 http://127.0.0.1:18196
 ```
 
-## API
-
-O frontend consome principalmente:
+### API
 
 - `GET /api/state`
 - `GET /healthz`
 
-## Fontes de dados
+### Fontes de Dados
 
-- GPS operational TLEs: CelesTrak
-- Datas de lançamento dos satélites GPS: QZSS
-- Fotos de blocos GPS: GPS.gov
+- TLEs operacionais do GPS: CelesTrak
+- datas de lançamento dos satélites GPS: QZSS
+- fotos dos blocos GPS: GPS.gov
 
-## Licença
+### Licença
 
 MIT. Veja [`LICENSE`](./LICENSE).
 
-## Observações
+### Observações
 
-- Este repositório não inclui config de tunnel nem cache operacional.
-- O projeto foi organizado para publicação sem informações sensíveis de infraestrutura pessoal.
+- este repositório não inclui configuração de tunnel nem cache de runtime
+- ele foi preparado para publicação pública sem segredos de infraestrutura pessoal
