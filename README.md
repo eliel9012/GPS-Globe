@@ -1,6 +1,12 @@
 # GPS-Globe
 
+## Português
+
 Visualizador web em tempo real para dados GPS/GNSS, com globo 3D, posição atual do receptor e satélites GPS usados no cálculo da posição.
+
+## English
+
+Real-time GPS/GNSS web visualizer with a 3D globe, live receiver position, and GPS satellites used in the positioning solution.
 
 ## O que este projeto faz
 
