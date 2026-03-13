@@ -1,0 +1,19 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="40" fill="#071425"/>
+  <circle cx="160" cy="160" r="94" fill="url(#a)" opacity="0.18"/>
+  <circle cx="160" cy="160" r="44" fill="#56E1D8" opacity="0.22"/>
+  <rect x="114" y="110" width="92" height="100" rx="16" fill="#0E2539" stroke="#56E1D8" stroke-width="4"/>
+  <rect x="44" y="128" width="58" height="64" rx="8" fill="#102F49" stroke="#6FD9FF" stroke-width="4"/>
+  <rect x="218" y="128" width="58" height="64" rx="8" fill="#102F49" stroke="#6FD9FF" stroke-width="4"/>
+  <rect x="146" y="70" width="28" height="34" rx="8" fill="#FFB85C"/>
+  <path d="M160 210V258" stroke="#FFDCA5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M160 258L144 282" stroke="#FFDCA5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M160 258L176 282" stroke="#FFDCA5" stroke-width="6" stroke-linecap="round"/>
+  <text x="160" y="238" fill="#EBF6FF" font-family="IBM Plex Mono, monospace" font-size="24" text-anchor="middle">GPS</text>
+  <defs>
+    <radialGradient id="a" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(160 160) rotate(90) scale(94)">
+      <stop stop-color="#56E1D8"/>
+      <stop offset="1" stop-color="#56E1D8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

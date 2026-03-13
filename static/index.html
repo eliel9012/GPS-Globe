@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GPS Globe | MeuLab</title>
+    <meta
+      name="description"
+      content="Globo 3D com a posi&ccedil;&atilde;o atual do receptor GPS e os sat&eacute;lites usados no c&aacute;lculo em tempo real."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="app-shell">
+      <section class="hero">
+        <p class="eyebrow">GNSS AO VIVO</p>
+        <h1>Posi&ccedil;&atilde;o atual do MeuLab, com sat&eacute;lites GPS acompanhados em tempo real.</h1>
+        <div class="hero-clock">
+          <div class="hero-clock-inner">
+            <span class="hero-clock-label">HORA LOCAL</span>
+            <div class="hero-clock-row">
+              <time class="hero-clock-time" id="gpsClock">--:--:--</time>
+              <span class="hero-clock-tz" id="gpsTz"></span>
+            </div>
+          </div>
+        </div>
+        <p class="subtitle" id="statusLine">
+          Conectando ao receptor e carregando a constela&ccedil;&atilde;o operacional do GPS...
+        </p>
+      </section>
+
+      <section class="layout">
+        <article class="globe-card">
+          <div class="metric-strip">
+            <div class="metric">
+              <span class="metric-label">Modo</span>
+              <strong class="metric-value" id="metricMode">--</strong>
+            </div>
+            <div class="metric">
+              <span class="metric-label">GPS usados</span>
+              <strong class="metric-value" id="metricUsed">--</strong>
+            </div>
+            <div class="metric">
+              <span class="metric-label">GPS vis&iacute;veis</span>
+              <strong class="metric-value" id="metricVisible">--</strong>
+            </div>
+            <div class="metric">
+              <span class="metric-label">HDOP</span>
+              <strong class="metric-value" id="metricHdop">--</strong>
+            </div>
+          </div>
+
+          <div id="globeViz" class="globe-viz"></div>
+
+          <aside class="satellite-tooltip" id="satelliteTooltip" hidden>
+            <button class="satellite-tooltip-close" id="satelliteTooltipClose" aria-label="Fechar">
+              ×
+            </button>
+            <img class="satellite-tooltip-image" id="satelliteTooltipImage" alt="" />
+            <div class="satellite-tooltip-body">
+              <p class="satellite-tooltip-kicker" id="satelliteTooltipKicker">Satélite GPS</p>
+              <h2 class="satellite-tooltip-title" id="satelliteTooltipTitle">--</h2>
+              <dl class="satellite-tooltip-grid">
+                <div>
+                  <dt>Lançamento</dt>
+                  <dd id="satelliteTooltipLaunch">--</dd>
+                </div>
+                <div>
+                  <dt>Localização atual</dt>
+                  <dd id="satelliteTooltipLocation">--</dd>
+                </div>
+                <div>
+                  <dt>Período orbital</dt>
+                  <dd id="satelliteTooltipPeriod">--</dd>
+                </div>
+                <div>
+                  <dt>Velocidade</dt>
+                  <dd id="satelliteTooltipSpeed">--</dd>
+                </div>
+              </dl>
+            </div>
+          </aside>
+
+          <div class="legend">
+            <span><i class="legend-dot receiver"></i> Dongle / posi&ccedil;&atilde;o atual</span>
+            <span><i class="legend-dot satellite"></i> Sat&eacute;lites GPS usados no c&aacute;lculo</span>
+            <span><i class="legend-dot nadir"></i> Subponto orbital sobre a Terra</span>
+          </div>
+        </article>
+
+        <section class="panel panel-horizontal">
+          <div class="panel-heading">
+            <h2>Posi&ccedil;&atilde;o atual</h2>
+            <div class="panel-heading-actions">
+              <span class="pill accent" id="tlePill">TLE</span>
+              <span class="pill" id="fixPill">Aguardando</span>
+            </div>
+          </div>
+          <dl class="detail-grid detail-grid-horizontal">
+            <div>
+              <dt>Latitude</dt>
+              <dd id="receiverLat">--</dd>
+            </div>
+            <div>
+              <dt>Longitude</dt>
+              <dd id="receiverLon">--</dd>
+            </div>
+            <div>
+              <dt>Altitude</dt>
+              <dd id="receiverAlt">--</dd>
+            </div>
+            <div>
+              <dt>Precis&atilde;o horiz.</dt>
+              <dd id="receiverAcc">--</dd>
+            </div>
+            <div>
+              <dt>Velocidade</dt>
+              <dd id="receiverSpeed">--</dd>
+            </div>
+            <div>
+              <dt>Atualizado h&aacute;</dt>
+              <dd id="receiverAge">--</dd>
+            </div>
+            <div>
+              <dt>Hora local</dt>
+              <dd id="receiverTime">--</dd>
+            </div>
+            <div>
+              <dt>GPSD h&aacute;</dt>
+              <dd id="gpsdAge">--</dd>
+            </div>
+            <div>
+              <dt>PDOP</dt>
+              <dd id="pdopValue">--</dd>
+            </div>
+            <div>
+              <dt>VDOP</dt>
+              <dd id="vdopValue">--</dd>
+            </div>
+            <div>
+              <dt>TLE atualizado</dt>
+              <dd id="tleAge">--</dd>
+            </div>
+          </dl>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

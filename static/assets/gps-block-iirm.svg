@@ -1,0 +1,12 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="40" fill="#071425"/>
+  <circle cx="160" cy="160" r="100" fill="#FFB85C" opacity="0.14"/>
+  <rect x="108" y="100" width="104" height="112" rx="20" fill="#0D2437" stroke="#FFB85C" stroke-width="4"/>
+  <rect x="34" y="120" width="62" height="72" rx="10" fill="#153650" stroke="#FFDCA5" stroke-width="4"/>
+  <rect x="224" y="120" width="62" height="72" rx="10" fill="#153650" stroke="#FFDCA5" stroke-width="4"/>
+  <rect x="142" y="66" width="36" height="30" rx="10" fill="#56E1D8"/>
+  <path d="M160 214V276" stroke="#56E1D8" stroke-width="6" stroke-linecap="round"/>
+  <path d="M160 230L126 276" stroke="#56E1D8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M160 230L194 276" stroke="#56E1D8" stroke-width="4" stroke-linecap="round"/>
+  <text x="160" y="244" fill="#EBF6FF" font-family="IBM Plex Mono, monospace" font-size="20" text-anchor="middle">BLOCK IIR-M</text>
+</svg>
