@@ -64,6 +64,10 @@ O frontend consome principalmente:
 - Datas de lançamento dos satélites GPS: QZSS
 - Fotos de blocos GPS: GPS.gov
 
+## Licença
+
+MIT. Veja [`LICENSE`](./LICENSE).
+
 ## Observações
 
 - Este repositório não inclui config de tunnel nem cache operacional.
